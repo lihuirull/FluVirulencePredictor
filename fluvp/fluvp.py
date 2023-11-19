@@ -205,7 +205,7 @@ def convert_NA_residues(marker_dict, NA_types, structure_folder):
     updated_marker_dict = marker_dict.copy()  # Create copy
     for protein in list(marker_dict.keys()):
         if protein in NA_types:         
-            if os.path.isfile(f"{structure_folder}/N2_{protein}"):
+            if os.path.isfile(f"{structure_folder}/N2_{protein}.txt"):
                 mapping_data = pd.read_csv(f"{structure_folder}/N2_{protein}.txt", sep = "\t", header = None,
                                        names = ['N2', protein])
             else:
