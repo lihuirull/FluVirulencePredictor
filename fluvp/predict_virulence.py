@@ -112,7 +112,7 @@ def get_explode_marker_file(input_marker_path, output_directory = ".", prefix = 
     return result_df
 
 
-def predict_new_data(input_marker_path, model_path, threshold_path, top_features_path, output_directory = ".",
+def predict_new_data(input_marker_path, model_path, threshold, top_features_path, output_directory = ".",
                      prefix = ""):
     """
     Predict class labels for new data using a trained model, threshold, and a set of top features.
@@ -120,7 +120,7 @@ def predict_new_data(input_marker_path, model_path, threshold_path, top_features
     Parameters:
     - input_marker_path (str): Path to the input marker file or directory containing marker files.
     - model_path (str): Path to the saved model file.
-    - threshold_path (str): Path to the saved threshold file.
+    - threshold(str): Probability threshold for model prediction
     - top_features_path (str): Path to the saved top features file.
     - output_directory (str): Directory where the output files will be saved.
     - prefix (str): Prefix for the output filenames.
@@ -134,7 +134,7 @@ def predict_new_data(input_marker_path, model_path, threshold_path, top_features
     processed_data.set_index("Strain ID",inplace = True)
     # Load the trained model, optimal threshold, and top features
     loaded_model = load(model_path)
-    loaded_threshold = load(threshold_path)
+
     top_features = load(top_features_path)
 
     # Select only the top features from the processed data
@@ -144,7 +144,7 @@ def predict_new_data(input_marker_path, model_path, threshold_path, top_features
     new_data_proba = loaded_model.predict_proba(processed_data_top_features)[:, 1]
 
     # Predict labels based on the optimal threshold
-    predictions = (new_data_proba >= loaded_threshold).astype(int)
+    predictions = (new_data_proba >= threshold).astype(int)
     predictions = [MAPPING_DICT[i] for i in predictions]
 
     # Create a DataFrame with the predictions and strain IDs

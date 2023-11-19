@@ -206,10 +206,10 @@ def convert_NA_residues(marker_dict, NA_types, structure_folder):
     for protein in list(marker_dict.keys()):
         if protein in NA_types:         
             if os.path.isfile(f"{structure_folder}/N2_{protein}"):
-                mapping_data = pd.read_csv(f"../data/{structure_folder}/N2_{protein}.txt", sep = "\t", header = None,
+                mapping_data = pd.read_csv(f"{structure_folder}/N2_{protein}.txt", sep = "\t", header = None,
                                        names = ['N2', protein])
             else:
-                mapping_data = pd.read_csv(f"../data/{structure_folder}/{protein}_N2.txt", sep = "\t", header = None,
+                mapping_data = pd.read_csv(f"{structure_folder}/{protein}_N2.txt", sep = "\t", header = None,
                                        names = [protein, 'N2'])
             convert_to_n2_dict = dict(zip(mapping_data[protein], mapping_data['N2']))
 
@@ -237,7 +237,7 @@ def convert_HA_residues(marker_dict, HA_types, structure_folder):
     updated_marker_dict = marker_dict.copy()  # Create copy
     for protein in list(marker_dict.keys()):
         if protein in HA_types:
-            mapping_data = pd.read_csv(f"{structure_folder}/H3_{protein}", sep = "\t", header = None,
+            mapping_data = pd.read_csv(f"{structure_folder}/H3_{protein}.txt", sep = "\t", header = None,
                                        names = ['H3', protein])
             convert_to_h3_dict = dict(zip(mapping_data[protein], mapping_data['H3']))
 
@@ -264,8 +264,6 @@ def annotate_markers(virulence_path):
     """
     # Load markers from files
     marker_dict = load_virulence_markers(virulence_path)
-
-
 
     # Duplicated
     marker_dict = {i: list(set(j)) for i, j in marker_dict.items()}
@@ -475,7 +473,7 @@ def parse_args():
                              help = 'Input CSV file with marker data or directory containing such files.')
     pred_parser.add_argument('-m', '--model_path', default = MODEL_PATH+'/random_forest_model.joblib', type = str,
                              help = 'Path to the trained model file.')
-    pred_parser.add_argument('-th', '--threshold_path', default=0.5, type=float,
+    pred_parser.add_argument('-th', '--threshold', default=0.5, type=float,
                              help='Probability threshold for model prediction.')
     pred_parser.add_argument('-o', '--output_directory', type = str, default = '.',
                              help = 'Directory to save the prediction results. Defaults to the current directory.')
@@ -564,8 +562,7 @@ def main():
         predictions = predict_virulence.predict_new_data(
             str(Path(args.input)),
             args.model_path,
-            args.threshold_path,
-            args.top_features_path,
+            args.threshold,
             args.output_directory,
             args.prefix
         )
