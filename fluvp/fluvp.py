@@ -350,11 +350,13 @@ def renumber_proteins(fasta_path, acc_pro_dict, marker_dict):
         # Convert other HA subtype numbering to H3
         if protein_abbr in HA_TYPES:
             renumbered_positions = convert_HA_residues(HA_results, protein_abbr, STRUCTURE_PATH)
+            renumbered_positions[protein_id] = renumbered_positions.pop('H3')
+            renumbering_results.update(renumbered_positions)
         elif protein_abbr in NA_TYPES:
             renumbered_positions = convert_NA_residues(HA_results, protein_abbr, STRUCTURE_PATH)
-        # Change the key from 'H3' to the protein ID
-        renumbered_positions[protein_id] = renumbered_positions.pop('H3')
-        renumbering_results.update(renumbered_positions)
+            renumbered_positions[protein_id] = renumbered_positions.pop('N2')
+            # Change the key from 'H3' to the protein ID
+            renumbering_results.update(renumbered_positions)
 
     return renumbering_results
 
