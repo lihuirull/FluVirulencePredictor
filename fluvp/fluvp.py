@@ -18,7 +18,7 @@ import pkg_resources
 
 pd.set_option('display.max_columns', None)
 
-HA_TYPES = [f"H{i}" for i in range(1, 19) if i != 3]
+HA_TYPES = [f"H{i}" for i in range(1, 17) if i != 3]
 NA_TYPES = [f"N{i}" for i in range(1, 10) if i != 2]
 
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
