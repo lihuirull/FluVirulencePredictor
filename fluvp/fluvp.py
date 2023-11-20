@@ -315,9 +315,10 @@ def renumber_proteins(fasta_path, acc_pro_dict, marker_dict):
     """
     fasta_sequences = SeqIO.parse(fasta_path, 'fasta')
     renumbering_results = {}
-    HA_results = {}
+
 
     for record in fasta_sequences:
+        HA_results = {}
         protein_id = record.id
         protein_abbr = acc_pro_dict.get(protein_id)
         is_hana_type = protein_abbr in HA_TYPES or protein_abbr in NA_TYPES
@@ -346,6 +347,7 @@ def renumber_proteins(fasta_path, acc_pro_dict, marker_dict):
         # Convert other HA subtype numbering to H3
         if is_hana_type:
             renumbered_positions = convert_HA_residues(HA_results, STRUCTURE_PATH)
+
             pop_num = "H3" if protein_abbr in HA_TYPES else ("N2" if protein_abbr in NA_TYPES else None)
             renumbered_positions[protein_id] = renumbered_positions.pop(pop_num)
             renumbering_results.update(renumbered_positions)
