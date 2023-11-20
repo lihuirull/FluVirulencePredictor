@@ -189,26 +189,6 @@ def map_residues_to_h3(protein, marker_dict, convert_to_h3_dict):
 
     return mapped_residues
 
-
-# def convert_NA_residues(marker_dict, NA_types, structure_folder):
-#     """
-#     Converts NA residues to N2 numbering.
-#
-#     Parameters:
-#         marker_dict: Dictionary with protein types as keys and marker lists as values.
-#         AN_types: List of NA types to be converted.
-#         structure_folder: Folder path where the structure mapping files are located.
-#
-#     Returns:
-#         Updated marker_dict with NA types converted to N2 numbering.
-#     """
-#     updated_marker_dict = marker_dict.copy()  # Create copy
-#     for protein in list(marker_dict.keys()):
-#         if protein in NA_types:
-#
-#
-#     return updated_marker_dict
-
 def convert_HA_residues(marker_dict, structure_folder):
     """
     Converts HA/NA residues to H3/N2 numbering.
@@ -352,14 +332,6 @@ def renumber_proteins(fasta_path, acc_pro_dict, marker_dict):
             renumbered_positions[protein_id] = renumbered_positions.pop(pop_num)
             renumbering_results.update(renumbered_positions)
 
-        # if protein_abbr in HA_TYPES:
-        #     # Change the key from 'H3' to the protein ID
-        #
-        #
-        #     renumbering_results.update(renumbered_positions)
-        # elif protein_abbr in NA_TYPES:
-        #     renumbered_positions = convert_HA_residues(HA_results, STRUCTURE_PATH)
-        #
     return renumbering_results
 
 
