@@ -103,7 +103,7 @@ def update_fasta_csv_with_annotations(input_fasta_path, annotations, output_dire
         print("\nFASTA file updated with annotations.")
 
 
-def annotate_fasta_file(input_fasta_path,  output_directory = ".", prefix = "", evalue = 1e-5,
+def annotate_fasta_file(input_fasta_path, output_directory = ".", prefix = "", evalue = 1e-5,
                         update_file = True, threads = 10, suppress_output = False):
     """
     Annotate a FASTA file using DIAMOND BLAST against a flu database.
@@ -190,49 +190,36 @@ def map_residues_to_h3(protein, marker_dict, convert_to_h3_dict):
     return mapped_residues
 
 
-def convert_NA_residues(marker_dict, NA_types, structure_folder):
-    """
-    Converts NA residues to N2 numbering.
-
-    Parameters:
-        marker_dict: Dictionary with protein types as keys and marker lists as values.
-        AN_types: List of NA types to be converted.
-        structure_folder: Folder path where the structure mapping files are located.
-
-    Returns:
-        Updated marker_dict with NA types converted to N2 numbering.
-    """
-    updated_marker_dict = marker_dict.copy()  # Create copy
-    for protein in list(marker_dict.keys()):
-        if protein in NA_types:         
-            if os.path.isfile(f"{structure_folder}/N2_{protein}.txt"):
-                mapping_data = pd.read_csv(f"{structure_folder}/N2_{protein}.txt", sep = "\t", header = None,
-                                       names = ['N2', protein])
-            else:
-                mapping_data = pd.read_csv(f"{structure_folder}/{protein}_N2.txt", sep = "\t", header = None,
-                                       names = [protein, 'N2'])
-            convert_to_n2_dict = dict(zip(mapping_data[protein], mapping_data['N2']))
-
-            residues = map_residues_to_h3(protein, marker_dict, convert_to_n2_dict)
-            if "N2" in updated_marker_dict:
-                updated_marker_dict["N2"].extend(residues)
-            else:
-                updated_marker_dict["N2"] = residues
-            del updated_marker_dict[protein]  # del key
-
-    return updated_marker_dict
+# def convert_NA_residues(marker_dict, NA_types, structure_folder):
+#     """
+#     Converts NA residues to N2 numbering.
+#
+#     Parameters:
+#         marker_dict: Dictionary with protein types as keys and marker lists as values.
+#         AN_types: List of NA types to be converted.
+#         structure_folder: Folder path where the structure mapping files are located.
+#
+#     Returns:
+#         Updated marker_dict with NA types converted to N2 numbering.
+#     """
+#     updated_marker_dict = marker_dict.copy()  # Create copy
+#     for protein in list(marker_dict.keys()):
+#         if protein in NA_types:
+#
+#
+#     return updated_marker_dict
 
 def convert_HA_residues(marker_dict, HA_types, structure_folder):
     """
-    Converts HA residues to H3 numbering.
+    Converts HA/NA residues to H3/N2 numbering.
 
     Parameters:
         marker_dict: Dictionary with protein types as keys and marker lists as values.
-        HA_types: List of HA types to be converted.
+        HA_types: List of HA/NA types to be converted.
         structure_folder: Folder path where the structure mapping files are located.
 
     Returns:
-        Updated marker_dict with HA types converted to H3 numbering.
+        Updated marker_dict with HA/NA types converted to H3/N2 numbering.
     """
     updated_marker_dict = marker_dict.copy()  # Create copy
     for protein in list(marker_dict.keys()):
@@ -249,8 +236,24 @@ def convert_HA_residues(marker_dict, HA_types, structure_folder):
             else:
                 updated_marker_dict["H3"] = residues
             del updated_marker_dict[protein]  # del key
+        elif protein in NA_TYPES:
+            if os.path.isfile(f"{structure_folder}/N2_{protein}.txt"):
+                mapping_data = pd.read_csv(f"{structure_folder}/N2_{protein}.txt", sep = "\t", header = None,
+                                           names = ['N2', protein])
+            else:
+                mapping_data = pd.read_csv(f"{structure_folder}/{protein}_N2.txt", sep = "\t", header = None,
+                                           names = [protein, 'N2'])
+            convert_to_n2_dict = dict(zip(mapping_data[protein], mapping_data['N2']))
+
+            residues = map_residues_to_h3(protein, marker_dict, convert_to_n2_dict)
+            if "N2" in updated_marker_dict:
+                updated_marker_dict["N2"].extend(residues)
+            else:
+                updated_marker_dict["N2"] = residues
+            del updated_marker_dict[protein]  # del key
 
     return updated_marker_dict
+
 
 def annotate_markers(virulence_path):
     """
@@ -268,11 +271,8 @@ def annotate_markers(virulence_path):
     # Duplicated
     marker_dict = {i: list(set(j)) for i, j in marker_dict.items()}
 
-    # Convert HA residues to H3 numbering and update marker_dict
+    # Convert HA/NA residues to H3/N2 numbering and update marker_dict
     marker_dict = convert_HA_residues(marker_dict, HA_TYPES, STRUCTURE_PATH)
-
-    # Convert NA residues to N2 numbering and update marker_dict
-    marker_dict = convert_NA_residues(marker_dict, NA_TYPES, STRUCTURE_PATH)
 
     # Duplicated
     marker_dict = {i: list(set(j)) for i, j in marker_dict.items()}
@@ -323,7 +323,6 @@ def renumber_proteins(fasta_path, acc_pro_dict, marker_dict):
         protein_id = record.id
         protein_abbr = acc_pro_dict.get(protein_id)
         is_hana_type = protein_abbr in HA_TYPES or protein_abbr in NA_TYPES
-  
 
         if protein_abbr in marker_dict or is_hana_type:
             try:
@@ -347,15 +346,11 @@ def renumber_proteins(fasta_path, acc_pro_dict, marker_dict):
         else:
             print(f"No markers found for {protein_abbr} in the source data.")
 
-        # Convert other HA subtype numbering to H3
-        if protein_abbr in HA_TYPES:
+        # Convert other HA/NA subtype numbering to H3/N2
+        if is_hana_type:
             renumbered_positions = convert_HA_residues(HA_results, protein_abbr, STRUCTURE_PATH)
             renumbered_positions[protein_id] = renumbered_positions.pop('H3')
-            renumbering_results.update(renumbered_positions)
-        elif protein_abbr in NA_TYPES:
-            renumbered_positions = convert_NA_residues(HA_results, protein_abbr, STRUCTURE_PATH)
             renumbered_positions[protein_id] = renumbered_positions.pop('N2')
-            # Change the key from 'H3' to the protein ID
             renumbering_results.update(renumbered_positions)
 
     return renumbering_results
@@ -473,10 +468,10 @@ def parse_args():
     pred_parser = subparsers.add_parser('pred', help = 'Predict new data labels using a trained model.')
     pred_parser.add_argument('-i', '--input', required = True, type = str,
                              help = 'Input CSV file with marker data or directory containing such files.')
-    pred_parser.add_argument('-m', '--model_path', default = MODEL_PATH+'/random_forest_model.joblib', type = str,
+    pred_parser.add_argument('-m', '--model_path', default = MODEL_PATH + '/random_forest_model.joblib', type = str,
                              help = 'Path to the trained model file.')
-    pred_parser.add_argument('-th', '--threshold', default=0.5, type=float,
-                             help='Probability threshold for model prediction.')
+    pred_parser.add_argument('-th', '--threshold', default = 0.5, type = float,
+                             help = 'Probability threshold for model prediction.')
     pred_parser.add_argument('-o', '--output_directory', type = str, default = '.',
                              help = 'Directory to save the prediction results. Defaults to the current directory.')
     pred_parser.add_argument('-p', '--prefix', type = str, default = '',
@@ -511,7 +506,7 @@ def process_extract_cmd(input_file, args, is_directory = True):
     else:
         annotations = pd.read_csv(f"{args.anno_path}")
     acc_pro_dic = dict(zip(annotations.iloc[:, 0], annotations.iloc[:, 1]))
-    marker_dict = annotate_markers(DATA_PATH+"/single_virulence_all.xlsx")
+    marker_dict = annotate_markers(DATA_PATH + "/single_virulence_all.xlsx")
     renumbering_results = renumber_proteins(
         fasta_path = str(input_file),
         acc_pro_dict = acc_pro_dic,
