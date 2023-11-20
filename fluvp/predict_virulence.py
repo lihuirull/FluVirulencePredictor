@@ -112,7 +112,7 @@ def get_explode_marker_file(input_marker_path, output_directory = ".", prefix = 
     return result_df
 
 
-def predict_new_data(input_marker_path, model_path, threshold, output_directory = ".",
+def predict_new_data(input_marker_path, model_path, threshold, data_path, output_directory = ".",
                      prefix = ""):
     """
     Predict class labels for new data using a trained model, threshold, and a set of top features.
@@ -134,7 +134,7 @@ def predict_new_data(input_marker_path, model_path, threshold, output_directory 
     # Load the trained model, optimal threshold, and top features
     loaded_model = load(model_path)
 
-    top_features = pd.read_csv('features_selection/results_RFE/max_AUC.csv').columns
+    top_features = pd.read_csv(f'{data_path}/max_AUC.csv').columns
 
     # Select only the top features from the processed data
     processed_data_top_features = processed_data.reindex(columns = top_features).fillna(0)

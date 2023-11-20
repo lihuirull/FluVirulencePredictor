@@ -542,8 +542,9 @@ def main():
             str(Path(args.input)),
             args.model_path,
             args.threshold,
+            DATA_PATH,
             args.output_directory,
-            args.prefix
+            args.prefix,
         )
         print(predictions)
         print(f"Predictions completed.")
