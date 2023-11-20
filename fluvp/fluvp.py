@@ -335,10 +335,10 @@ def renumber_proteins(fasta_path, acc_pro_dict, marker_dict):
     return renumbering_results
 
 
-def identify_virulive_markers(input_file_path, renumbering_results, marker_markers, acc_pro_dic, output_directory = ".",
+def identify_virulence_markers(input_file_path, renumbering_results, marker_markers, acc_pro_dic, output_directory = ".",
                               prefix = ""):
     """
-    Identifies virulive markers in protein sequences based on the provided marker markers
+    Identifies virulence markers in protein sequences based on the provided marker markers
     and the renumbered sequences.
 
     Parameters:
@@ -350,7 +350,7 @@ def identify_virulive_markers(input_file_path, renumbering_results, marker_marke
         prefix (str): Optional prefix for the output CSV filename.
 
     Returns:
-        pandas.DataFrame: A dataframe with columns for protein IDs, virulive markers, count of virulive markers,
+        pandas.DataFrame: A dataframe with columns for protein IDs, virulence markers, count of virulence markers,
         and protein types.
     """
     results = []
@@ -369,21 +369,21 @@ def identify_virulive_markers(input_file_path, renumbering_results, marker_marke
         expected_markers = marker_markers.get(use_protein, [])
 
         # Check if markers match the renumbered sequence
-        virulive_markers = []
+        virulence_markers = []
 
         for marker in expected_markers:
             match = re.match(r"(\d+)([A-Z])", marker)
             if match and match.group() in renumbered_position:
-                virulive_markers.append(match.group())
+                virulence_markers.append(match.group())
 
-        # Calculate the number of virulive markers found
-        num_virulive_markers = len(virulive_markers)
+        # Calculate the number of virulence markers found
+        num_virulence_markers = len(virulence_markers)
 
         # Append the findings to the results list
         results.append({
             'Strain ID': input_file_name.split(".")[0],
-            'virulive markers': ','.join(virulive_markers),
-            'Number of virulive markers': num_virulive_markers,
+            'virulence markers': ','.join(virulence_markers),
+            'Number of virulence markers': num_virulence_markers,
             'Protein Type': f'{protein_type}(H3 numbering)' if protein_type in HA_TYPES else protein_type,
         })
 
@@ -491,7 +491,7 @@ def process_extract_cmd(input_file, args, is_directory = True):
         acc_pro_dict = acc_pro_dic,
         marker_dict = marker_dict
     )
-    results_df = identify_virulive_markers(
+    results_df = identify_virulence_markers(
         input_file_path = str(input_file),
         renumbering_results = renumbering_results,
         marker_markers = marker_dict,

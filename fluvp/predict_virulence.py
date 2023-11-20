@@ -31,8 +31,8 @@ def explode_markers(df, input_marker_path, output_directory, prefix):
     # Read the CSV file into a DataFrame
     df_original = df.copy()
 
-    # Group and sum the 'Number of Adaptive markers' by 'Strain ID'
-    grouped = df.groupby('Strain ID')['Number of Adaptive markers'].sum()
+    # Group and sum the 'Number of Virulence markers' by 'Strain ID'
+    grouped = df.groupby('Strain ID')['Number of Virulence markers'].sum()
 
     # Identify strains with no adaptive markers
     mask = df['Strain ID'].map(grouped) == 0
@@ -41,16 +41,16 @@ def explode_markers(df, input_marker_path, output_directory, prefix):
         print(f"There are {no_adaptive_marker_count} strains without any markers.")
 
     # Explode the 'Adaptive markers' column from a comma-separated string into a list
-    df['Adaptive markers'] = df['Adaptive markers'].str.split(',')
+    df['Virulence markers'] = df['Virulence markers'].str.split(',')
 
     # Expand the list into a new DataFrame and merge it back
-    df = df.explode('Adaptive markers')
+    df = df.explode('Virulence markers')
 
     # Normalize the protein type for HA
     df['Protein Type'] = df['Protein Type'].apply(lambda x: 'HA' if "H" in x else x)
 
     # Add a new column with mutations and protein types combined
-    df['marker_Protein'] = df['Adaptive markers'] + '_' + df['Protein Type']
+    df['marker_Protein'] = df['Virulence markers'] + '_' + df['Protein Type']
 
     # Create a new DataFrame with columns as possible 'marker_Protein' values, rows as 'Strain ID'
     df_matrix = pd.crosstab(df['Strain ID'], df['marker_Protein'])
@@ -65,7 +65,7 @@ def explode_markers(df, input_marker_path, output_directory, prefix):
     df_label = pd.merge(df_matrix, df_original, on = 'Strain ID')
 
     # Drop duplicates based on 'Strain ID'
-    df_label.drop(labels = ['Adaptive markers', 'Number of Adaptive markers', 'Protein Type'], axis = 1,
+    df_label.drop(labels = ['Virulence markers', 'Number of Virulence markers', 'Protein Type'], axis = 1,
                   inplace = True)
 
     df_label.drop_duplicates(subset = "Strain ID", keep = "first", inplace = True)
@@ -112,7 +112,7 @@ def get_explode_marker_file(input_marker_path, output_directory = ".", prefix = 
     return result_df
 
 
-def predict_new_data(input_marker_path, model_path, threshold, top_features_path, output_directory = ".",
+def predict_new_data(input_marker_path, model_path, threshold, output_directory = ".",
                      prefix = ""):
     """
     Predict class labels for new data using a trained model, threshold, and a set of top features.
@@ -121,7 +121,6 @@ def predict_new_data(input_marker_path, model_path, threshold, top_features_path
     - input_marker_path (str): Path to the input marker file or directory containing marker files.
     - model_path (str): Path to the saved model file.
     - threshold(str): Probability threshold for model prediction
-    - top_features_path (str): Path to the saved top features file.
     - output_directory (str): Directory where the output files will be saved.
     - prefix (str): Prefix for the output filenames.
 
@@ -135,7 +134,7 @@ def predict_new_data(input_marker_path, model_path, threshold, top_features_path
     # Load the trained model, optimal threshold, and top features
     loaded_model = load(model_path)
 
-    top_features = load(top_features_path)
+    top_features = pd.read_csv('features_selection/results_RFE/max_AUC.csv').columns
 
     # Select only the top features from the processed data
     processed_data_top_features = processed_data.reindex(columns = top_features).fillna(0)
@@ -150,10 +149,11 @@ def predict_new_data(input_marker_path, model_path, threshold, top_features_path
     # Create a DataFrame with the predictions and strain IDs
     prediction_results = pd.DataFrame({
         'Strain ID': processed_data_top_features.index,
-        'Prediction': predictions
+        'Prediction': predictions,
+        'Probability':new_data_proba
     }).reset_index(drop = True)
 
-    prediction_results.to_csv(f"{output_directory}/{add_prefix}_prediction.csv")
+    prediction_results.to_csv(f"{output_directory}/{add_prefix}prediction.csv")
 
     return prediction_results
 
