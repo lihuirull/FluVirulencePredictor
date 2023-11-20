@@ -103,7 +103,7 @@ def update_fasta_csv_with_annotations(input_fasta_path, annotations, output_dire
         print("\nFASTA file updated with annotations.")
 
 
-def annotate_fasta_file(input_fasta_path,  output_directory = ".", prefix = "", evalue = 1e-5,
+def annotate_fasta_file(input_fasta_path, output_directory = ".", prefix = "", evalue = 1e-5,
                         update_file = True, threads = 10, suppress_output = False):
     """
     Annotate a FASTA file using DIAMOND BLAST against a flu database.
@@ -189,6 +189,7 @@ def map_residues_to_h3(protein, marker_dict, convert_to_h3_dict):
 
     return mapped_residues
 
+
 def convert_HA_residues(marker_dict, structure_folder):
     """
     Converts HA/NA residues to H3/N2 numbering.
@@ -218,10 +219,10 @@ def convert_HA_residues(marker_dict, structure_folder):
         elif protein in NA_TYPES:
             if os.path.isfile(f"{structure_folder}/N2_{protein}.txt"):
                 mapping_data = pd.read_csv(f"{structure_folder}/N2_{protein}.txt", sep = "\t", header = None,
-                                       names = ['N2', protein])
+                                           names = ['N2', protein])
             else:
                 mapping_data = pd.read_csv(f"{structure_folder}/{protein}_N2.txt", sep = "\t", header = None,
-                                       names = [protein, 'N2'])
+                                           names = [protein, 'N2'])
             convert_to_n2_dict = dict(zip(mapping_data[protein], mapping_data['N2']))
 
             residues = map_residues_to_h3(protein, marker_dict, convert_to_n2_dict)
@@ -232,6 +233,7 @@ def convert_HA_residues(marker_dict, structure_folder):
             del updated_marker_dict[protein]  # del key
 
     return updated_marker_dict
+
 
 def annotate_markers(virulence_path):
     """
@@ -296,7 +298,6 @@ def renumber_proteins(fasta_path, acc_pro_dict, marker_dict):
     fasta_sequences = SeqIO.parse(fasta_path, 'fasta')
     renumbering_results = {}
 
-
     for record in fasta_sequences:
         HA_results = {}
         protein_id = record.id
@@ -335,8 +336,9 @@ def renumber_proteins(fasta_path, acc_pro_dict, marker_dict):
     return renumbering_results
 
 
-def identify_virulence_markers(input_file_path, renumbering_results, marker_markers, acc_pro_dic, output_directory = ".",
-                              prefix = ""):
+def identify_virulence_markers(input_file_path, renumbering_results, marker_markers, acc_pro_dic,
+                               output_directory = ".",
+                               prefix = ""):
     """
     Identifies virulence markers in protein sequences based on the provided marker markers
     and the renumbered sequences.
@@ -378,13 +380,14 @@ def identify_virulence_markers(input_file_path, renumbering_results, marker_mark
 
         # Calculate the number of virulence markers found
         num_virulence_markers = len(virulence_markers)
-
+        protein = f'{protein_type}(H3 numbering)' if protein_type in HA_TYPES else (
+            f'{protein_type}(N2 numbering)' if protein_type in NA_TYPES else protein_type)
         # Append the findings to the results list
         results.append({
             'Strain ID': input_file_name.split(".")[0],
-            'Virulence markers': ','.join(virulence_markers),
-            'Number of virulence markers': num_virulence_markers,
-            'Protein Type': f'{protein_type}(H3 numbering)' if protein_type in HA_TYPES else protein_type,
+            'Virulence Markers': ','.join(virulence_markers),
+            'Number of Virulence Markers': num_virulence_markers,
+            'Protein Type': protein,
         })
 
     # Convert the results into a pandas DataFrame
@@ -447,10 +450,10 @@ def parse_args():
     pred_parser = subparsers.add_parser('pred', help = 'Predict new data labels using a trained model.')
     pred_parser.add_argument('-i', '--input', required = True, type = str,
                              help = 'Input CSV file with marker data or directory containing such files.')
-    pred_parser.add_argument('-m', '--model_path', default = MODEL_PATH+'/random_forest_model.joblib', type = str,
+    pred_parser.add_argument('-m', '--model_path', default = MODEL_PATH + '/random_forest_model.joblib', type = str,
                              help = 'Path to the trained model file.')
-    pred_parser.add_argument('-th', '--threshold', default=0.5, type=float,
-                             help='Probability threshold for model prediction.')
+    pred_parser.add_argument('-th', '--threshold', default = 0.5, type = float,
+                             help = 'Probability threshold for model prediction.')
     pred_parser.add_argument('-o', '--output_directory', type = str, default = '.',
                              help = 'Directory to save the prediction results. Defaults to the current directory.')
     pred_parser.add_argument('-p', '--prefix', type = str, default = '',
@@ -485,7 +488,7 @@ def process_extract_cmd(input_file, args, is_directory = True):
     else:
         annotations = pd.read_csv(f"{args.anno_path}")
     acc_pro_dic = dict(zip(annotations.iloc[:, 0], annotations.iloc[:, 1]))
-    marker_dict = annotate_markers(DATA_PATH+"/single_virulence_all.xlsx")
+    marker_dict = annotate_markers(DATA_PATH + "/single_virulence_all.xlsx")
     renumbering_results = renumber_proteins(
         fasta_path = str(input_file),
         acc_pro_dict = acc_pro_dic,

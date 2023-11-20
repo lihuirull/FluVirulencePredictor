@@ -32,7 +32,7 @@ def explode_markers(df, input_marker_path, output_directory, prefix):
     df_original = df.copy()
 
     # Group and sum the 'Number of Virulence markers' by 'Strain ID'
-    grouped = df.groupby('Strain ID')['Number of virulence markers'].sum()
+    grouped = df.groupby('Strain ID')['Number of Virulence Markers'].sum()
 
     # Identify strains with no adaptive markers
     mask = df['Strain ID'].map(grouped) == 0
@@ -41,19 +41,19 @@ def explode_markers(df, input_marker_path, output_directory, prefix):
         print(f"There are {no_adaptive_marker_count} strains without any markers.")
 
     # Explode the 'Adaptive markers' column from a comma-separated string into a list
-    df['Virulence markers'] = df['Virulence markers'].str.split(',')
+    df['Virulence Markers'] = df['Virulence Markers'].str.split(',')
 
     # Expand the list into a new DataFrame and merge it back
-    df = df.explode('Virulence markers')
+    df = df.explode('Virulence Markers')
 
     # Normalize the protein type for HA
     df['Protein Type'] = df['Protein Type'].apply(lambda x: 'HA' if "H" in x else x)
 
     # Add a new column with mutations and protein types combined
-    df['marker_Protein'] = df['Virulence markers'] + '_' + df['Protein Type']
+    df['Marker_Protein'] = df['Virulence Markers'] + '_' + df['Protein Type']
 
     # Create a new DataFrame with columns as possible 'marker_Protein' values, rows as 'Strain ID'
-    df_matrix = pd.crosstab(df['Strain ID'], df['marker_Protein'])
+    df_matrix = pd.crosstab(df['Strain ID'], df['Marker_Protein'])
 
     # Replace counts with 1 (presence) or 0 (absence)
     df_matrix = df_matrix.applymap(lambda x: 1 if x > 0 else 0)
@@ -65,7 +65,7 @@ def explode_markers(df, input_marker_path, output_directory, prefix):
     df_label = pd.merge(df_matrix, df_original, on = 'Strain ID')
 
     # Drop duplicates based on 'Strain ID'
-    df_label.drop(labels = ['Virulence markers', 'Number of virulence markers', 'Protein Type'], axis = 1,
+    df_label.drop(labels = ['Virulence Markers', 'Number of Virulence Markers', 'Protein Type'], axis = 1,
                   inplace = True)
 
     df_label.drop_duplicates(subset = "Strain ID", keep = "first", inplace = True)
