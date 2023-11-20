@@ -209,13 +209,12 @@ def map_residues_to_h3(protein, marker_dict, convert_to_h3_dict):
 #
 #     return updated_marker_dict
 
-def convert_HA_residues(marker_dict, HA_types, structure_folder):
+def convert_HA_residues(marker_dict, structure_folder):
     """
     Converts HA/NA residues to H3/N2 numbering.
 
     Parameters:
         marker_dict: Dictionary with protein types as keys and marker lists as values.
-        HA_types: List of HA/NA types to be converted.
         structure_folder: Folder path where the structure mapping files are located.
 
     Returns:
@@ -223,7 +222,7 @@ def convert_HA_residues(marker_dict, HA_types, structure_folder):
     """
     updated_marker_dict = marker_dict.copy()  # Create copy
     for protein in list(marker_dict.keys()):
-        if protein in HA_types:
+        if protein in HA_TYPES:
             mapping_data = pd.read_csv(f"{structure_folder}/H3_{protein}.txt", sep = "\t", header = None,
                                        names = ['H3', protein])
             convert_to_h3_dict = dict(zip(mapping_data[protein], mapping_data['H3']))
@@ -271,7 +270,7 @@ def annotate_markers(virulence_path):
     marker_dict = {i: list(set(j)) for i, j in marker_dict.items()}
 
     # Convert HA/NA residues to H3/N2 numbering and update marker_dict
-    marker_dict = convert_HA_residues(marker_dict, HA_TYPES, STRUCTURE_PATH)
+    marker_dict = convert_HA_residues(marker_dict, STRUCTURE_PATH)
 
     # Duplicated
     marker_dict = {i: list(set(j)) for i, j in marker_dict.items()}
@@ -343,7 +342,7 @@ def renumber_proteins(fasta_path, acc_pro_dict, marker_dict):
                 print(f"An error occurred while processing {protein_id}: {str(e)}")
         else:
             print(f"No markers found for {protein_abbr} in the source data.")
-        renumbered_positions = convert_HA_residues(HA_results, protein_abbr, STRUCTURE_PATH)
+        renumbered_positions = convert_HA_residues(HA_results, STRUCTURE_PATH)
         # Convert other HA subtype numbering to H3
         if protein_abbr in HA_TYPES:
             # Change the key from 'H3' to the protein ID
