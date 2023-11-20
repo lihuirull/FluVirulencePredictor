@@ -32,7 +32,7 @@ def explode_markers(df, input_marker_path, output_directory, prefix):
     df_original = df.copy()
 
     # Group and sum the 'Number of Virulence markers' by 'Strain ID'
-    grouped = df.groupby('Strain ID')['Number of Virulence markers'].sum()
+    grouped = df.groupby('Strain ID')['Number of virulence markers'].sum()
 
     # Identify strains with no adaptive markers
     mask = df['Strain ID'].map(grouped) == 0
@@ -65,7 +65,7 @@ def explode_markers(df, input_marker_path, output_directory, prefix):
     df_label = pd.merge(df_matrix, df_original, on = 'Strain ID')
 
     # Drop duplicates based on 'Strain ID'
-    df_label.drop(labels = ['Virulence markers', 'Number of Virulence markers', 'Protein Type'], axis = 1,
+    df_label.drop(labels = ['Virulence markers', 'Number of virulence markers', 'Protein Type'], axis = 1,
                   inplace = True)
 
     df_label.drop_duplicates(subset = "Strain ID", keep = "first", inplace = True)

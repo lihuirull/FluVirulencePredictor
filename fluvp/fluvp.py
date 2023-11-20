@@ -382,7 +382,7 @@ def identify_virulence_markers(input_file_path, renumbering_results, marker_mark
         # Append the findings to the results list
         results.append({
             'Strain ID': input_file_name.split(".")[0],
-            'virulence markers': ','.join(virulence_markers),
+            'Virulence markers': ','.join(virulence_markers),
             'Number of virulence markers': num_virulence_markers,
             'Protein Type': f'{protein_type}(H3 numbering)' if protein_type in HA_TYPES else protein_type,
         })
