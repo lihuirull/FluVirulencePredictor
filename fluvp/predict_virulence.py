@@ -9,7 +9,7 @@ from pathlib import Path
 import pandas as pd
 from joblib import load
 
-MAPPING_DICT = {0: 'Virulent', 1: 'Avirulent'}   
+MAPPING_DICT = {0: 'Virulent', 1: 'Avirulent'}
 
 
 def explode_markers(df, input_marker_path, output_directory, prefix):
@@ -130,14 +130,23 @@ def predict_new_data(input_marker_path, model_path, threshold, data_path, output
     # Process the input marker file first
     add_prefix = prefix + "_" if prefix else ""
     processed_data = get_explode_marker_file(input_marker_path, output_directory, add_prefix)
-    processed_data.set_index("Strain ID",inplace = True)
+    processed_data.set_index("Strain ID", inplace = True)
     # Load the trained model, optimal threshold, and top features
     loaded_model = load(model_path)
 
-    top_features = pd.read_csv(f'{data_path}/max_AUC.csv').columns
+    # Read the top features used by the model
+    top_features = pd.read_csv(f'{data_path}/max_AUC.csv').columns.tolist()
 
-    # Select only the top features from the processed data
-    processed_data_top_features = processed_data.reindex(columns = top_features).fillna(0)
+    # Process the input data
+    # Reindex the processed data to include all top features from the model
+    # Fill any additional features not found in the data with zeros
+    processed_data_top_features = processed_data.reindex(columns = top_features, fill_value = 0)
+
+    # Make sure that the processed data has the same number of features as the model expects
+    if processed_data_top_features.shape[1] != len(top_features):
+        raise ValueError(
+            f"Processed data has {processed_data_top_features.shape[1]} features,"
+            f" but the model expects {len(top_features)} features.")
 
     # Predict probabilities for the new data
     new_data_proba = loaded_model.predict_proba(processed_data_top_features)[:, 1]
@@ -150,18 +159,16 @@ def predict_new_data(input_marker_path, model_path, threshold, data_path, output
     prediction_results = pd.DataFrame({
         'Strain ID': processed_data_top_features.index,
         'Prediction': predictions,
-        'Probability':new_data_proba
+        'Probability': new_data_proba
     }).reset_index(drop = True)
 
     prediction_results.to_csv(f"{output_directory}/{add_prefix}prediction.csv")
 
     return prediction_results
 
-
 # if __name__ == '__main__':
-    # predictions = predict_new_data("marker_results", '../model/gnb_model.joblib', '../model/optimal_threshold.joblib',
-    #                  '../model/top_features.joblib', output_directory = "matrix_results", prefix = "")
-    # predictions = predict_new_data("test_protein_markers.csv", '../model/gnb_model.joblib', '../model/optimal_threshold.joblib',
-    #                                'model/top_features.joblib', output_directory = "matrix_results", prefix = "")
-    # print(predictions)
-
+# predictions = predict_new_data("marker_results", '../model/gnb_model.joblib', '../model/optimal_threshold.joblib',
+#                  '../model/top_features.joblib', output_directory = "matrix_results", prefix = "")
+# predictions = predict_new_data("test_protein_markers.csv", '../model/gnb_model.joblib', '../model/optimal_threshold.joblib',
+#                                'model/top_features.joblib', output_directory = "matrix_results", prefix = "")
+# print(predictions)

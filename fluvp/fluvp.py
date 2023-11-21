@@ -405,9 +405,7 @@ def is_fasta_file(filename):
 
 
 def find_files_with_string(directory, string):
-    print(directory,string)
     all_items = os.listdir(directory)
-    print(all_items)
     files_with_string = [item for item in all_items
                          if string in item and os.path.isfile(os.path.join(directory, item)) and item.endswith(
             "_annotated.csv")]
