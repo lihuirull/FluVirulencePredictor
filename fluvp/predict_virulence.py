@@ -145,6 +145,8 @@ def predict_new_data(input_marker_path, model_path, threshold, data_path, output
     # Reindex the processed data to include all top features from the model
     # Fill any additional features not found in the data with zeros
     processed_data_top_features = processed_data.reindex(columns = top_features, fill_value = 0)
+    print(processed_data)
+    print(processed_data_top_features)
     # Make sure that the processed data has the same number of features as the model expects
     if processed_data_top_features.shape[1] != len(top_features):
         raise ValueError(
