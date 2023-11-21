@@ -101,7 +101,7 @@ The `fluvp` tool generates the following outputs based on the subcommand execute
 
 - For `anno`: Annotated FASTA files or a directory of annotated FASTA files with added annotations based on DIAMOND BLAST results.
 - For `extract`: A CSV file with extracted markers and annotations formatted as: `Strain ID,Virulence Markers,Number of Virulence Markers,Protein Type`
-- For `pred`: A CSV file containing predicted virulence levels for the new marker data based on the trained model.
+- For `pred`: This parameter outputs not only the predicted class labels for the new marker data based on the trained model but also the prediction probabilities. The current study employs a very small probability threshold.
 
 ## Notes
 
