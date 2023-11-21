@@ -139,7 +139,7 @@ def predict_new_data(input_marker_path, model_path, threshold, data_path, output
     data = pd.read_csv(f'{data_path}/max_AUC.csv')
     markers_lst = data.loc[:, 'features'].str.cat(sep = ',').split(',')
     markers_lst = [i.strip() for i in markers_lst]
-    top_features = sorted(Counter(markers_lst).keys(), key = Counter(markers_lst).get, reverse = True)
+    top_features = sorted(Counter(markers_lst).keys(), key = Counter(markers_lst).get, reverse = True)[:11]
 
     # Process the input data
     # Reindex the processed data to include all top features from the model
