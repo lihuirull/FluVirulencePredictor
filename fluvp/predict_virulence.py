@@ -4,6 +4,7 @@
 # Created on 2023/11/12 19:53
 import os
 import sys
+from collections import Counter
 from pathlib import Path
 
 import pandas as pd
@@ -135,7 +136,10 @@ def predict_new_data(input_marker_path, model_path, threshold, data_path, output
     loaded_model = load(model_path)
 
     # Read the top features used by the model
-    top_features = pd.read_csv(f'{data_path}/max_AUC.csv').columns.tolist()
+    data = pd.read_csv(f'{data_path}/max_AUC.csv')
+    markers_lst = data.loc[:, 'features'].str.cat(sep = ',').split(',')
+    markers_lst = [i.strip() for i in markers_lst]
+    top_features = sorted(Counter(markers_lst).keys(), key = Counter(markers_lst).get, reverse = True)
 
     # Process the input data
     # Reindex the processed data to include all top features from the model
